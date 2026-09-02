@@ -1,0 +1,15 @@
+<svg width="180" height="50" viewBox="0 0 180 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular emblem with fork & knife -->
+  <circle cx="25" cy="25" r="22" fill="#c8a96a"/>
+  <circle cx="25" cy="25" r="22" stroke="#2b1d16" stroke-width="1.5" fill="none"/>
+  <!-- Fork -->
+  <path d="M18 14 L18 36 M15 14 L15 22 Q15 25 18 25 M21 14 L21 22 Q21 25 18 25" stroke="#2b1d16" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+  <!-- Knife -->
+  <path d="M32 14 Q35 14 35 20 L35 36 M32 14 L32 22 Q32 26 35 26" stroke="#2b1d16" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+  <!-- Sage leaf accent -->
+  <path d="M25 40 Q23 43 25 45 Q27 43 25 40" fill="#8a9a6b" opacity="0.8"/>
+
+  <!-- Text: Maison Sage -->
+  <text x="56" y="22" font-family="Playfair Display, Georgia, serif" font-size="18" font-weight="700" fill="#2b1d16" letter-spacing="0.5">Maison Sage</text>
+  <text x="57" y="38" font-family="Inter, system-ui, sans-serif" font-size="7.5" font-weight="400" fill="#6b4f3a" letter-spacing="2.5">FRENCH BISTRO &amp; COFFEE</text>
+</svg>
