@@ -14,6 +14,10 @@ import {
   Phone,
   MessageSquare,
   User,
+  Utensils,
+  Hash,
+  StickyNote,
+  DollarSign,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,7 +54,24 @@ type ContactMessage = {
   created_at: string;
 };
 
-type Tab = 'reservations' | 'reviews' | 'messages';
+type OrderLine = {
+  name: string;
+  price: number;
+  quantity: number;
+};
+
+type Order = {
+  id: string;
+  customer_name: string;
+  table_number: string;
+  items: OrderLine[];
+  total: number;
+  notes: string | null;
+  status: string;
+  created_at: string;
+};
+
+type Tab = 'reservations' | 'orders' | 'reviews' | 'messages';
 
 export default function AdminDashboard() {
   const { session, loading: authLoading, signOut } = useAuth();
@@ -59,19 +80,22 @@ export default function AdminDashboard() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [resRes, resRev, resMsg] = await Promise.all([
+    const [resRes, resRev, resMsg, resOrd] = await Promise.all([
       supabase.from('reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('guest_reviews').select('*').order('created_at', { ascending: false }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
+      supabase.from('orders').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (resRes.data) setReservations(resRes.data as Reservation[]);
     if (resRev.data) setReviews(resRev.data as Review[]);
     if (resMsg.data) setMessages(resMsg.data as ContactMessage[]);
+    if (resOrd.data) setOrders(resOrd.data as Order[]);
     setLoading(false);
   }, []);
 
@@ -123,7 +147,18 @@ export default function AdminDashboard() {
     setMessages((prev) => prev.filter((m) => m.id !== id));
   };
 
+  const updateOrderStatus = async (id: string, status: string) => {
+    await supabase.from('orders').update({ status }).eq('id', id);
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+  };
+
+  const deleteOrder = async (id: string) => {
+    await supabase.from('orders').delete().eq('id', id);
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+  };
+
   const pendingReservations = reservations.filter((r) => r.status === 'pending').length;
+  const newOrders = orders.filter((o) => o.status === 'new').length;
   const pendingReviews = reviews.filter((r) => !r.is_approved).length;
   const newMessages = messages.filter((m) => m.status === 'new').length;
 
@@ -181,6 +216,7 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
           {tabBtn('reservations', 'Reservations', pendingReservations)}
+          {tabBtn('orders', 'Orders', newOrders)}
           {tabBtn('reviews', 'Reviews', pendingReviews)}
           {tabBtn('messages', 'Messages', newMessages)}
         </div>
@@ -233,6 +269,100 @@ export default function AdminDashboard() {
                         </button>
                       )}
                       <button onClick={() => deleteReservation(r.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Orders */}
+        {tab === 'orders' && (
+          <div className="space-y-4">
+            {orders.length === 0 ? (
+              <p className="font-body text-sm text-[#f7f3ee]/40 text-center py-20">No orders yet.</p>
+            ) : (
+              orders.map((o) => (
+                <div key={o.id} className={`rounded-2xl border p-5 ${
+                  o.status === 'new' ? 'bg-[#3a2a20] border-[#b5563a]/30' :
+                  o.status === 'preparing' ? 'bg-[#3a2a20] border-[#c8a96a]/30' :
+                  o.status === 'ready' ? 'bg-[#3a2a20] border-[#8a9a6b]/30' :
+                  'bg-[#3a2a20] border-[#c8a96a]/10'
+                }`}>
+                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                    <div className="flex-1 space-y-3">
+                      {/* Header: name + table + status */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Utensils className="h-4 w-4 text-[#c8a96a]" />
+                        <span className="font-serif-display text-lg text-[#f7f3ee]">{o.customer_name}</span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#f7f3ee]/5 px-2.5 py-0.5 text-xs text-[#f7f3ee]/60">
+                          <Hash className="h-3 w-3" /> {o.table_number}
+                        </span>
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          o.status === 'new' ? 'bg-[#b5563a]/20 text-[#b5563a]' :
+                          o.status === 'preparing' ? 'bg-[#c8a96a]/20 text-[#c8a96a]' :
+                          o.status === 'ready' ? 'bg-[#8a9a6b]/20 text-[#8a9a6b]' :
+                          'bg-[#f7f3ee]/10 text-[#f7f3ee]/40'
+                        }`}>
+                          {o.status}
+                        </span>
+                        <span className="flex items-center gap-1 font-body text-xs text-[#f7f3ee]/40">
+                          <Clock className="h-3 w-3" /> {new Date(o.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                      </div>
+
+                      {/* Items list */}
+                      <div className="space-y-1.5">
+                        {o.items.map((line, i) => (
+                          <div key={i} className="flex items-center justify-between font-body text-sm text-[#f7f3ee]/70">
+                            <span>
+                              <span className="font-medium text-[#c8a96a]">{line.quantity}x</span> {line.name}
+                            </span>
+                            <span className="text-[#f7f3ee]/50">${(line.price * line.quantity).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Notes */}
+                      {o.notes && (
+                        <div className="flex items-start gap-2 rounded-lg bg-[#f7f3ee]/5 px-3 py-2">
+                          <StickyNote className="h-3.5 w-3.5 text-[#c8a96a] shrink-0 mt-0.5" />
+                          <p className="font-body text-sm text-[#f7f3ee]/50 italic">{o.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Total */}
+                      <div className="flex items-center gap-1.5 border-t border-[#c8a96a]/10 pt-2">
+                        <DollarSign className="h-3.5 w-3.5 text-[#c8a96a]" />
+                        <span className="font-serif-display text-lg text-[#c8a96a]">{Number(o.total).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {o.status === 'new' && (
+                        <button onClick={() => updateOrderStatus(o.id, 'preparing')}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#c8a96a]/20 px-3 py-2 font-body text-xs text-[#c8a96a] hover:bg-[#c8a96a]/30 transition-colors whitespace-nowrap">
+                          <Utensils className="h-3.5 w-3.5" /> Start preparing
+                        </button>
+                      )}
+                      {o.status === 'preparing' && (
+                        <button onClick={() => updateOrderStatus(o.id, 'ready')}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#8a9a6b]/20 px-3 py-2 font-body text-xs text-[#8a9a6b] hover:bg-[#8a9a6b]/30 transition-colors whitespace-nowrap">
+                          <Check className="h-3.5 w-3.5" /> Mark ready
+                        </button>
+                      )}
+                      {o.status === 'ready' && (
+                        <button onClick={() => updateOrderStatus(o.id, 'completed')}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/10 px-3 py-2 font-body text-xs text-[#f7f3ee]/60 hover:bg-[#f7f3ee]/15 transition-colors whitespace-nowrap">
+                          <Check className="h-3.5 w-3.5" /> Complete
+                        </button>
+                      )}
+                      <button onClick={() => deleteOrder(o.id)}
                         className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

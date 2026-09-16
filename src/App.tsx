@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { supabase, type MenuItem } from '@/lib/supabase';
 import { AuthProvider } from '@/hooks/useAuth';
+import { OrderProvider } from '@/hooks/useOrder';
 import HomePage from '@/pages/HomePage';
 import AboutPage from '@/pages/AboutPage';
 import MenuPage from '@/pages/MenuPage';
@@ -39,7 +40,8 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <OrderProvider>
+        <BrowserRouter>
         <ScrollToTop />
         <Routes>
           <Route
@@ -54,7 +56,8 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </OrderProvider>
     </AuthProvider>
   );
 }

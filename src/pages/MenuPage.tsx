@@ -3,6 +3,7 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { supabase, type MenuItem } from '@/lib/supabase';
 import PlateCard from '@/components/PlateCard';
 import FeaturedSection from '@/components/FeaturedSection';
+import OrderTray from '@/components/OrderTray';
 import PageLayout from '@/components/PageLayout';
 import { useReveal } from '@/hooks/useReveal';
 
@@ -118,6 +119,7 @@ export default function MenuPage() {
           </div>
         </div>
       </section>
+      <OrderTray />
     </PageLayout>
   );
 }

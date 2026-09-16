@@ -1,5 +1,7 @@
-import { Leaf, Flame, Award, Wheat } from 'lucide-react';
+import { Leaf, Flame, Award, Wheat, Plus, Check } from 'lucide-react';
+import { useState } from 'react';
 import type { MenuItem } from '@/lib/supabase';
+import { useOrder } from '@/hooks/useOrder';
 
 const tagIcon: Record<string, { icon: typeof Leaf; label: string }> = {
   Vegetarian: { icon: Leaf, label: 'Veg' },
@@ -10,6 +12,16 @@ const tagIcon: Record<string, { icon: typeof Leaf; label: string }> = {
 };
 
 export default function PlateCard({ item }: { item: MenuItem }) {
+  const { add, lines } = useOrder();
+  const [justAdded, setJustAdded] = useState(false);
+  const line = lines.find((l) => l.id === item.id);
+
+  const handleAdd = () => {
+    add(item);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1200);
+  };
+
   return (
     <article className="group relative flex flex-col items-center overflow-hidden rounded-2xl bg-[#f7f3ee] border border-[#6b4f3a]/10 shadow-sm hover:shadow-xl hover:shadow-[#2b1d16]/10 transition-all duration-500 hover:-translate-y-1 pt-8 pb-5 px-5">
       {/* Spinning circular plate */}
@@ -34,6 +46,13 @@ export default function PlateCard({ item }: { item: MenuItem }) {
       <div className="absolute top-4 right-4 rounded-full bg-[#2b1d16]/90 px-3.5 py-1.5 font-body text-sm font-medium text-[#c8a96a] backdrop-blur-sm">
         ${Number(item.price).toFixed(2)}
       </div>
+
+      {/* Quantity badge */}
+      {line && (
+        <div className="absolute top-4 left-4 flex h-8 w-8 items-center justify-center rounded-full bg-[#c8a96a] text-[#2b1d16] font-body text-sm font-bold shadow-md">
+          {line.quantity}
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex flex-1 flex-col items-center text-center mt-5">
@@ -64,6 +83,26 @@ export default function PlateCard({ item }: { item: MenuItem }) {
             })}
           </div>
         )}
+
+        {/* Add to order button */}
+        <button
+          onClick={handleAdd}
+          className={`mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-body text-sm font-medium transition-all duration-300 ${
+            justAdded
+              ? 'bg-[#8a9a6b] text-[#f7f3ee]'
+              : 'bg-[#2b1d16] text-[#c8a96a] hover:bg-[#3a2a20] hover:scale-[1.03]'
+          }`}
+        >
+          {justAdded ? (
+            <>
+              <Check className="h-4 w-4" /> Added
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" /> Add to order
+            </>
+          )}
+        </button>
       </div>
     </article>
   );
