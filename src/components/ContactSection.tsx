@@ -173,7 +173,7 @@ export default function ContactSection() {
             <Phone className="h-4 w-4 text-[#b5563a]" /> +1 (555) 014-2278
           </div>
           <div className="flex items-center justify-center gap-2 font-body text-sm text-[#6b4f3a]">
-            <Mail className="h-4 w-4 text-[#b5563a]" /> hello@maisonsage.cafe
+            <Mail className="h-4 w-4 text-[#b5563a]" /> hello@thedailycup.cafe
           </div>
         </div>
       </div>

@@ -44,7 +44,7 @@ export default function NewsletterSection() {
             </span>
           </div>
           <h2 className="font-serif-display text-3xl lg:text-4xl text-[#f7f3ee]">
-            Seasonal updates, straight to your inbox
+            Fresh updates, straight to your inbox
           </h2>
           <p className="mt-4 font-body text-sm text-[#f7f3ee]/60 leading-relaxed">
             New menu drops, special events, and the occasional recipe. No spam —

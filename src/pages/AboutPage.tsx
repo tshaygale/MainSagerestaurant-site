@@ -40,7 +40,7 @@ const defaultReviews = [
     rating: 5,
   },
   {
-    text: 'Maison Sage is the kind of place where the chef remembers your name and your order. The panna cotta arrived and I forgot my own name.',
+    text: 'The Daily Cup is the kind of place where the barista remembers your name and your order. The panna cotta arrived and I forgot my own name.',
     author: 'Thomas Berg',
     role: 'Regular since 2019',
     rating: 5,
@@ -93,7 +93,7 @@ export default function AboutPage() {
               <div className="overflow-hidden rounded-3xl">
                 <img
                   src="https://images.pexels.com/photos/14590691/pexels-photo-14590691.jpeg"
-                  alt="Maison Sage interior"
+                  alt="The Daily Cup interior"
                   className="h-[440px] lg:h-[520px] w-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -108,13 +108,13 @@ export default function AboutPage() {
                 Our Story
               </span>
               <h2 className="mt-4 font-serif-display text-4xl lg:text-5xl text-[#2b1d16] leading-tight">
-                A neighbourhood kitchen with a seasonal heart
+                A neighborhood cafe with a seasonal heart
               </h2>
               <div className="mt-6 space-y-4 font-body text-[#6b4f3a] leading-relaxed">
                 <p>
-                  Maison Sage opened in 2014 as a tiny six-table cafe on Garden
-                  Street. The idea was simple: cook with whatever the farmers
-                  brought that morning, and let the menu write itself.
+                  The Daily Cup opened in 2014 as a tiny six-table cafe on Garden
+                  Street. The idea was simple: brew great coffee and cook with
+                  whatever the farmers brought that morning.
                 </p>
                 <p>
                   A decade later, we still change the menu with every harvest.
@@ -135,7 +135,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <p className="font-serif-display text-3xl text-[#c8a96a]">30+</p>
-                  <p className="font-body text-xs text-[#6b4f3a] mt-1">Seasonal dishes</p>
+                  <p className="font-body text-xs text-[#6b4f3a] mt-1">Fresh dishes</p>
                 </div>
                 <div>
                   <p className="font-serif-display text-3xl text-[#c8a96a]">4.9</p>
@@ -205,7 +205,7 @@ export default function AboutPage() {
                 A place for the whole family
               </h2>
               <p className="mt-4 font-body text-[#6b4f3a] leading-relaxed">
-                Maison Sage is not just for date nights. We built this room for
+                The Daily Cup is not just for date nights. We built this room for
                 everyone — toddlers, teenagers, grandparents, and the four-legged
                 friends who never miss a walk.
               </p>
@@ -216,7 +216,7 @@ export default function AboutPage() {
                 <div className="relative h-56 overflow-hidden">
                   <img
                     src="https://images.pexels.com/photos/7504344/pexels-photo-7504344.jpeg"
-                    alt="Children enjoying a meal at Maison Sage"
+                    alt="Children enjoying a meal at The Daily Cup"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-[#c8a96a] text-[#2b1d16] shadow-lg">

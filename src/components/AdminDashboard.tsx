@@ -160,7 +160,7 @@ export default function AdminDashboard() {
       <header className="border-b border-[#c8a96a]/15 bg-[#3a2a20]">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src="/logo.svg" alt="Maison Sage" className="h-10 w-36 object-contain" />
+            <img src="/logo.svg" alt="The Daily Cup" className="h-10 w-36 object-contain" />
             <span className="font-serif-display text-xl text-[#c8a96a] hidden sm:block">Owner Dashboard</span>
           </div>
           <div className="flex items-center gap-4">

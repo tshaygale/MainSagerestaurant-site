@@ -36,7 +36,7 @@ export default function Navbar() {
         <Link to="/" className="group flex items-center">
           <img
             src="/logo.svg"
-            alt="Maison Sage French Bistro & Coffee House"
+            alt="The Daily Cup — Cafe & Coffee House"
             className="h-12 w-52 object-contain transition-transform duration-500 group-hover:scale-[1.03]"
           />
         </Link>

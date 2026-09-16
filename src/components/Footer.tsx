@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <img
             src="/logo.svg"
-            alt="Maison Sage French Bistro & Coffee House"
+            alt="The Daily Cup — Cafe & Coffee House"
             className="h-14 w-52 object-contain"
           />
 
@@ -20,7 +20,7 @@ export default function Footer() {
 
           <div className="flex flex-col items-center gap-2">
             <p className="font-body text-xs text-[#f7f3ee]/40">
-              © {new Date().getFullYear()} Maison Sage. Crafted with care.
+              © {new Date().getFullYear()} The Daily Cup. Brewed with care.
             </p>
             <a href="/admin/signin" className="font-body text-xs text-[#f7f3ee]/20 hover:text-[#c8a96a] transition-colors">
               Owner login

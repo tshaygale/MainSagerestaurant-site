@@ -63,7 +63,7 @@ export default function VisitPage() {
                   <div>
                     <p className="font-body text-sm font-medium text-[#2b1d16]">Reservations</p>
                     <p className="font-body text-sm text-[#6b4f3a]">
-                      +1 (555) 014-2278 · hello@maisonsage.cafe
+                      +1 (555) 014-2278 · hello@thedailycup.cafe
                     </p>
                   </div>
                 </div>
@@ -71,7 +71,7 @@ export default function VisitPage() {
 
               <div className="mt-8 flex gap-3">
                 <a
-                  href="https://instagram.com/maisonsage"
+                  href="https://instagram.com/thedailycup"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2b1d16] text-[#c8a96a] hover:bg-[#3a2a20] transition-colors"
@@ -80,7 +80,7 @@ export default function VisitPage() {
                   <Instagram className="h-5 w-5" />
                 </a>
                 <a
-                  href="https://facebook.com/maisonsage"
+                  href="https://facebook.com/thedailycup"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2b1d16] text-[#c8a96a] hover:bg-[#3a2a20] transition-colors"
@@ -104,7 +104,7 @@ export default function VisitPage() {
               <div className="overflow-hidden rounded-3xl border border-[#6b4f3a]/10 shadow-lg">
                 <iframe
                   src={mapEmbed}
-                  title="Maison Sage location map"
+                  title="The Daily Cup location map"
                   className="w-full h-[420px] lg:h-[520px]"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"

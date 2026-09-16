@@ -32,7 +32,7 @@ export default function AdminSignIn() {
     <div className="min-h-screen bg-[#2b1d16] flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <img src="/logo.svg" alt="Maison Sage" className="h-14 w-52 object-contain mx-auto mb-6" />
+          <img src="/logo.svg" alt="The Daily Cup" className="h-14 w-52 object-contain mx-auto mb-6" />
           <h1 className="font-serif-display text-3xl text-[#f7f3ee]">Owner Sign In</h1>
           <p className="mt-2 font-body text-sm text-[#f7f3ee]/50">
             Manage reservations, reviews, and messages
@@ -52,7 +52,7 @@ export default function AdminSignIn() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="owner@maisonsage.cafe"
+              placeholder="owner@thedailycup.cafe"
               className={inputClass}
             />
             <Mail className="absolute left-4 top-[42px] h-4 w-4 text-[#6b4f3a]/40 pointer-events-none" />

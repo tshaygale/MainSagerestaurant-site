@@ -46,7 +46,7 @@ export default function HomePage({ featured, menuItems }: Props) {
           <div className="inline-flex items-center gap-2 rounded-full border border-[#c8a96a]/40 bg-[#2b1d16]/40 px-4 py-1.5 mb-8 animate-fade-up backdrop-blur-sm">
             <Star className="h-3.5 w-3.5 fill-[#c8a96a] text-[#c8a96a]" />
             <span className="font-body text-xs tracking-[0.25em] uppercase text-[#c8a96a]">
-              Seasonal · Since 2014
+              Fresh · Since 2014
             </span>
           </div>
 
@@ -56,14 +56,14 @@ export default function HomePage({ featured, menuItems }: Props) {
           >
             A table set for
             <br />
-            <span className="italic text-[#c8a96a]">slow mornings</span>
+            <span className="italic text-[#c8a96a]">good mornings</span>
           </h1>
 
           <p
             className="mt-7 max-w-xl mx-auto font-body text-base sm:text-lg text-[#f7f3ee]/75 leading-relaxed animate-fade-up"
             style={{ animationDelay: '0.2s' }}
           >
-            Seasonal plates, honest coffee, and a room that smells like fresh
+            Fresh plates, honest coffee, and a room that smells like fresh
             herbs. Pull up a chair — the menu changes with the harvest.
           </p>
 
@@ -99,7 +99,7 @@ export default function HomePage({ featured, menuItems }: Props) {
               <div className="overflow-hidden rounded-3xl">
                 <img
                   src="https://images.pexels.com/photos/14590691/pexels-photo-14590691.jpeg"
-                  alt="Maison Sage interior"
+                  alt="The Daily Cup interior"
                   className="h-[400px] w-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -114,10 +114,10 @@ export default function HomePage({ featured, menuItems }: Props) {
                 Our Story
               </span>
               <h2 className="mt-4 font-serif-display text-4xl lg:text-5xl text-[#2b1d16] leading-tight">
-                A neighbourhood kitchen with a seasonal heart
+                A neighborhood cafe with a seasonal heart
               </h2>
               <p className="mt-6 font-body text-[#6b4f3a] leading-relaxed">
-                Maison Sage opened in 2014 as a tiny six-table cafe on Garden
+                The Daily Cup opened in 2014 as a tiny six-table cafe on Garden
                 Street. A decade later, we still change the menu with every
                 harvest, working directly with twelve local farms and two
                 coffee roasters.
@@ -129,7 +129,7 @@ export default function HomePage({ featured, menuItems }: Props) {
                 </div>
                 <div>
                   <p className="font-serif-display text-3xl text-[#c8a96a]">30+</p>
-                  <p className="font-body text-xs text-[#6b4f3a] mt-1">Seasonal dishes</p>
+                  <p className="font-body text-xs text-[#6b4f3a] mt-1">Fresh dishes</p>
                 </div>
                 <div>
                   <p className="font-serif-display text-3xl text-[#c8a96a]">4.9</p>
