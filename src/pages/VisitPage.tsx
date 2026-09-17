@@ -1,4 +1,4 @@
-import { Clock, MapPin, Phone, Mail, Instagram, Facebook, Navigation } from 'lucide-react';
+import { Clock, MapPin, Phone, Mail, Instagram, Facebook, Navigation, Car, Wifi, Coffee } from 'lucide-react';
 import PageLayout from '@/components/PageLayout';
 import { useReveal } from '@/hooks/useReveal';
 
@@ -64,6 +64,34 @@ export default function VisitPage() {
                     <p className="font-body text-sm font-medium text-[#2b1d16]">Reservations</p>
                     <p className="font-body text-sm text-[#6b4f3a]">
                       +1 (555) 014-2278 · hello@thedailycup.cafe
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#efe7db] text-[#b5563a]">
+                    <Car className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="font-body text-sm font-medium text-[#2b1d16]">Parking</p>
+                    <p className="font-body text-sm text-[#6b4f3a]">
+                      Free street parking after 6pm. Two-hour metered parking
+                      during the day. A small public lot is one block north on
+                      Garden &amp; 5th.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#efe7db] text-[#b5563a]">
+                    <Wifi className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="font-body text-sm font-medium text-[#2b1d16]">WiFi &amp; Workspace</p>
+                    <p className="font-body text-sm text-[#6b4f3a]">
+                      Free WiFi for all guests — network <span className="font-medium text-[#2b1d16]">DailyCup-Guest</span>,
+                      password <span className="font-medium text-[#2b1d16]">freshbrew</span>. Outlets at
+                      every window seat. Laptop-friendly until 4pm on weekdays.
                     </p>
                   </div>
                 </div>

@@ -14,6 +14,9 @@ export default function Footer() {
           <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2">
             <Link to="/about" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">About</Link>
             <Link to="/menu" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">Menu</Link>
+            <Link to="/shop" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">Shop</Link>
+            <Link to="/loyalty" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">Rewards</Link>
+            <Link to="/catering" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">Catering</Link>
             <Link to="/visit" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">Visit</Link>
             <Link to="/reserve" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors">Reserve</Link>
           </nav>

@@ -8,6 +8,9 @@ import AboutPage from '@/pages/AboutPage';
 import MenuPage from '@/pages/MenuPage';
 import VisitPage from '@/pages/VisitPage';
 import ReservePage from '@/pages/ReservePage';
+import ShopPage from '@/pages/ShopPage';
+import LoyaltyPage from '@/pages/LoyaltyPage';
+import CateringPage from '@/pages/CateringPage';
 import AdminSignIn from '@/components/AdminSignIn';
 import AdminDashboard from '@/components/AdminDashboard';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -52,6 +55,9 @@ export default function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/visit" element={<VisitPage />} />
           <Route path="/reserve" element={<ReservePage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/loyalty" element={<LoyaltyPage />} />
+          <Route path="/catering" element={<CateringPage />} />
           <Route path="/admin/signin" element={<AdminSignIn />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFoundPage />} />

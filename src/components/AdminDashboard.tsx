@@ -19,7 +19,6 @@ import {
   StickyNote,
   DollarSign,
   Store,
-  BagTake,
   Sun,
   Home,
   Coffee,
@@ -379,7 +378,7 @@ export default function AdminDashboard() {
                         <Utensils className="h-4 w-4 text-[#c8a96a]" />
                         <span className="font-serif-display text-lg text-[#f7f3ee]">{o.customer_name}</span>
                         <span className="inline-flex items-center gap-1 rounded-full bg-[#f7f3ee]/5 px-2.5 py-0.5 text-xs text-[#f7f3ee]/60">
-                          {o.order_type === 'pickup' ? <BagTake className="h-3 w-3" /> : <Store className="h-3 w-3" />}
+                          {o.order_type === 'pickup' ? <ShoppingBag className="h-3 w-3" /> : <Store className="h-3 w-3" />}
                           {o.order_type === 'pickup' ? 'Pickup' : <><Hash className="h-3 w-3" /> {o.table_number}</>}
                         </span>
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${

@@ -6,6 +6,7 @@ const links = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
   { label: 'Menu', href: '/menu' },
+  { label: 'Shop', href: '/shop' },
   { label: 'Visit', href: '/visit' },
 ];
 
@@ -58,12 +59,20 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <Link
-          to="/reserve"
-          className="hidden md:inline-flex items-center rounded-full border border-[#c8a96a]/60 px-5 py-2 font-body text-sm text-[#c8a96a] hover:bg-[#c8a96a] hover:text-[#2b1d16] transition-all duration-300"
-        >
-          Reserve
-        </Link>
+        <div className="hidden md:flex items-center gap-5">
+          <Link
+            to="/loyalty"
+            className="font-body text-sm tracking-wide text-[#c8a96a]/80 hover:text-[#c8a96a] transition-colors duration-300"
+          >
+            Rewards
+          </Link>
+          <Link
+            to="/reserve"
+            className="inline-flex items-center rounded-full border border-[#c8a96a]/60 px-5 py-2 font-body text-sm text-[#c8a96a] hover:bg-[#c8a96a] hover:text-[#2b1d16] transition-all duration-300"
+          >
+            Reserve
+          </Link>
+        </div>
 
         <button
           onClick={() => setOpen((v) => !v)}
@@ -96,6 +105,35 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              to="/shop"
+              onClick={() => setOpen(false)}
+              className={`block py-3 font-body transition-colors ${
+                location.pathname === '/shop' ? 'text-[#c8a96a]' : 'text-[#f7f3ee]/85 hover:text-[#c8a96a]'
+              }`}
+            >
+              Shop
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/loyalty"
+              onClick={() => setOpen(false)}
+              className="block py-3 font-body text-[#c8a96a]"
+            >
+              Rewards
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/catering"
+              onClick={() => setOpen(false)}
+              className="block py-3 font-body text-[#f7f3ee]/85 hover:text-[#c8a96a] transition-colors"
+            >
+              Catering
+            </Link>
+          </li>
           <li>
             <Link
               to="/reserve"

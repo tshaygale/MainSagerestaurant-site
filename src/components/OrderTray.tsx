@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, X, Loader2, CheckCircle2, Send, User, Hash, StickyNote, Store, BagTake } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, X, Loader2, CheckCircle2, Send, User, Hash, StickyNote, Store, ShoppingBag } from 'lucide-react';
 import { useOrder } from '@/hooks/useOrder';
 import { supabase } from '@/lib/supabase';
 
@@ -129,7 +129,7 @@ export default function OrderTray() {
                             : 'bg-[#efe7db] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
                         }`}
                       >
-                        <BagTake className="h-4 w-4" /> Pickup
+                        <ShoppingBag className="h-4 w-4" /> Pickup
                       </button>
                     </div>
                   </div>
