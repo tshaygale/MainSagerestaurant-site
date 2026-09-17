@@ -17,13 +17,18 @@ export default function PlateCard({ item }: { item: MenuItem }) {
   const line = lines.find((l) => l.id === item.id);
 
   const handleAdd = () => {
+    if (!item.is_available) return;
     add(item);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };
 
   return (
-    <article className="group relative flex flex-col items-center overflow-hidden rounded-2xl bg-[#f7f3ee] border border-[#6b4f3a]/10 shadow-sm hover:shadow-xl hover:shadow-[#2b1d16]/10 transition-all duration-500 hover:-translate-y-1 pt-8 pb-5 px-5">
+    <article className={`group relative flex flex-col items-center overflow-hidden rounded-2xl border shadow-sm transition-all duration-500 pt-8 pb-5 px-5 ${
+      item.is_available
+        ? 'bg-[#f7f3ee] border-[#6b4f3a]/10 hover:shadow-xl hover:shadow-[#2b1d16]/10 hover:-translate-y-1'
+        : 'bg-[#efe7db] border-[#6b4f3a]/5 opacity-60'
+    }`}>
       {/* Spinning circular plate */}
       <div className="plate-roll relative">
         {/* Decorative plate rim */}
@@ -34,7 +39,7 @@ export default function PlateCard({ item }: { item: MenuItem }) {
               src={item.image_url}
               alt={item.name}
               loading="lazy"
-              className="h-full w-full object-cover"
+              className={`h-full w-full object-cover ${item.is_available ? '' : 'grayscale'}`}
             />
           ) : (
             <div className="h-full w-full bg-[#efe7db]" />
@@ -47,8 +52,15 @@ export default function PlateCard({ item }: { item: MenuItem }) {
         ${Number(item.price).toFixed(2)}
       </div>
 
+      {/* Sold out badge */}
+      {!item.is_available && (
+        <div className="absolute top-4 left-4 rounded-full bg-[#b5563a] px-3 py-1 font-body text-xs font-medium text-[#f7f3ee]">
+          Sold out
+        </div>
+      )}
+
       {/* Quantity badge */}
-      {line && (
+      {item.is_available && line && (
         <div className="absolute top-4 left-4 flex h-8 w-8 items-center justify-center rounded-full bg-[#c8a96a] text-[#2b1d16] font-body text-sm font-bold shadow-md">
           {line.quantity}
         </div>
@@ -85,24 +97,26 @@ export default function PlateCard({ item }: { item: MenuItem }) {
         )}
 
         {/* Add to order button */}
-        <button
-          onClick={handleAdd}
-          className={`mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-body text-sm font-medium transition-all duration-300 ${
-            justAdded
-              ? 'bg-[#8a9a6b] text-[#f7f3ee]'
-              : 'bg-[#2b1d16] text-[#c8a96a] hover:bg-[#3a2a20] hover:scale-[1.03]'
-          }`}
-        >
-          {justAdded ? (
-            <>
-              <Check className="h-4 w-4" /> Added
-            </>
-          ) : (
-            <>
-              <Plus className="h-4 w-4" /> Add to order
-            </>
-          )}
-        </button>
+        {item.is_available && (
+          <button
+            onClick={handleAdd}
+            className={`mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-body text-sm font-medium transition-all duration-300 ${
+              justAdded
+                ? 'bg-[#8a9a6b] text-[#f7f3ee]'
+                : 'bg-[#2b1d16] text-[#c8a96a] hover:bg-[#3a2a20] hover:scale-[1.03]'
+            }`}
+          >
+            {justAdded ? (
+              <>
+                <Check className="h-4 w-4" /> Added
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" /> Add to order
+              </>
+            )}
+          </button>
+        )}
       </div>
     </article>
   );

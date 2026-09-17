@@ -14,6 +14,18 @@ export type MenuItem = {
   image_url: string | null;
   tags: string[];
   is_featured: boolean;
+  is_available: boolean;
   sort_order: number;
   created_at: string;
+};
+
+export type MerchProduct = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  category: string;
+  image_url: string | null;
+  is_available: boolean;
+  sort_order: number;
 };

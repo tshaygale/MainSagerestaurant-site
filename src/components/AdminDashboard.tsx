@@ -18,8 +18,18 @@ import {
   Hash,
   StickyNote,
   DollarSign,
+  Store,
+  BagTake,
+  Sun,
+  Home,
+  Coffee,
+  ShoppingBag,
+  CalendarDays,
+  Award,
+  Pencil,
+  Save,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, type MenuItem, type MerchProduct } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
 type Reservation = {
@@ -30,6 +40,7 @@ type Reservation = {
   party_size: number;
   reservation_date: string;
   reservation_time: string;
+  seating_preference: string;
   special_requests: string | null;
   status: string;
   created_at: string;
@@ -54,11 +65,7 @@ type ContactMessage = {
   created_at: string;
 };
 
-type OrderLine = {
-  name: string;
-  price: number;
-  quantity: number;
-};
+type OrderLine = { name: string; price: number; quantity: number };
 
 type Order = {
   id: string;
@@ -68,10 +75,43 @@ type Order = {
   total: number;
   notes: string | null;
   status: string;
+  order_type: string;
   created_at: string;
 };
 
-type Tab = 'reservations' | 'orders' | 'reviews' | 'messages';
+type MerchOrder = {
+  id: string;
+  customer_name: string;
+  email: string;
+  items: OrderLine[];
+  total: number;
+  status: string;
+  created_at: string;
+};
+
+type CateringRequest = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  event_type: string;
+  event_date: string;
+  guest_count: number;
+  message: string | null;
+  status: string;
+  created_at: string;
+};
+
+type LoyaltyMember = {
+  id: string;
+  name: string;
+  email: string;
+  points: number;
+  stamps: number;
+  created_at: string;
+};
+
+type Tab = 'reservations' | 'orders' | 'menu' | 'merch' | 'catering' | 'loyalty' | 'reviews' | 'messages';
 
 export default function AdminDashboard() {
   const { session, loading: authLoading, signOut } = useAuth();
@@ -81,21 +121,35 @@ export default function AdminDashboard() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [merchOrders, setMerchOrders] = useState<MerchOrder[]>([]);
+  const [cateringReqs, setCateringReqs] = useState<CateringRequest[]>([]);
+  const [loyaltyMembers, setLoyaltyMembers] = useState<LoyaltyMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingPrice, setEditingPrice] = useState<string | null>(null);
+  const [priceInput, setPriceInput] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [resRes, resRev, resMsg, resOrd] = await Promise.all([
+    const [resRes, resRev, resMsg, resOrd, resMenu, resMerchOrd, resCat, resLoy] = await Promise.all([
       supabase.from('reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('guest_reviews').select('*').order('created_at', { ascending: false }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
       supabase.from('orders').select('*').order('created_at', { ascending: false }),
+      supabase.from('menu_items').select('*').order('category', { ascending: true }).order('sort_order', { ascending: true }),
+      supabase.from('merch_orders').select('*').order('created_at', { ascending: false }),
+      supabase.from('catering_requests').select('*').order('created_at', { ascending: false }),
+      supabase.from('loyalty_members').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (resRes.data) setReservations(resRes.data as Reservation[]);
     if (resRev.data) setReviews(resRev.data as Review[]);
     if (resMsg.data) setMessages(resMsg.data as ContactMessage[]);
     if (resOrd.data) setOrders(resOrd.data as Order[]);
+    if (resMenu.data) setMenuItems(resMenu.data as MenuItem[]);
+    if (resMerchOrd.data) setMerchOrders(resMerchOrd.data as MerchOrder[]);
+    if (resCat.data) setCateringReqs(resCat.data as CateringRequest[]);
+    if (resLoy.data) setLoyaltyMembers(resLoy.data as LoyaltyMember[]);
     setLoading(false);
   }, []);
 
@@ -117,50 +171,79 @@ export default function AdminDashboard() {
 
   if (!session) return null;
 
+  // Actions
   const updateReservationStatus = async (id: string, status: string) => {
     await supabase.from('reservations').update({ status }).eq('id', id);
     setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
   };
-
   const deleteReservation = async (id: string) => {
     await supabase.from('reservations').delete().eq('id', id);
     setReservations((prev) => prev.filter((r) => r.id !== id));
   };
-
   const approveReview = async (id: string) => {
     await supabase.from('guest_reviews').update({ is_approved: true }).eq('id', id);
     setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, is_approved: true } : r)));
   };
-
   const deleteReview = async (id: string) => {
     await supabase.from('guest_reviews').delete().eq('id', id);
     setReviews((prev) => prev.filter((r) => r.id !== id));
   };
-
   const updateMessageStatus = async (id: string, status: string) => {
     await supabase.from('contact_messages').update({ status }).eq('id', id);
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, status } : m)));
   };
-
   const deleteMessage = async (id: string) => {
     await supabase.from('contact_messages').delete().eq('id', id);
     setMessages((prev) => prev.filter((m) => m.id !== id));
   };
-
   const updateOrderStatus = async (id: string, status: string) => {
     await supabase.from('orders').update({ status }).eq('id', id);
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
   };
-
   const deleteOrder = async (id: string) => {
     await supabase.from('orders').delete().eq('id', id);
     setOrders((prev) => prev.filter((o) => o.id !== id));
   };
+  const toggleAvailability = async (id: string, current: boolean) => {
+    await supabase.from('menu_items').update({ is_available: !current }).eq('id', id);
+    setMenuItems((prev) => prev.map((m) => (m.id === id ? { ...m, is_available: !current } : m)));
+  };
+  const savePrice = async (id: string) => {
+    const newPrice = parseFloat(priceInput);
+    if (isNaN(newPrice) || newPrice < 0) return;
+    await supabase.from('menu_items').update({ price: newPrice }).eq('id', id);
+    setMenuItems((prev) => prev.map((m) => (m.id === id ? { ...m, price: newPrice } : m)));
+    setEditingPrice(null);
+    setPriceInput('');
+  };
+  const updateMerchOrderStatus = async (id: string, status: string) => {
+    await supabase.from('merch_orders').update({ status }).eq('id', id);
+    setMerchOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+  };
+  const deleteMerchOrder = async (id: string) => {
+    await supabase.from('merch_orders').delete().eq('id', id);
+    setMerchOrders((prev) => prev.filter((o) => o.id !== id));
+  };
+  const updateCateringStatus = async (id: string, status: string) => {
+    await supabase.from('catering_requests').update({ status }).eq('id', id);
+    setCateringReqs((prev) => prev.map((c) => (c.id === id ? { ...c, status } : c)));
+  };
+  const deleteCatering = async (id: string) => {
+    await supabase.from('catering_requests').delete().eq('id', id);
+    setCateringReqs((prev) => prev.filter((c) => c.id !== id));
+  };
+  const deleteLoyaltyMember = async (id: string) => {
+    await supabase.from('loyalty_members').delete().eq('id', id);
+    setLoyaltyMembers((prev) => prev.filter((l) => l.id !== id));
+  };
 
+  // Counts
   const pendingReservations = reservations.filter((r) => r.status === 'pending').length;
   const newOrders = orders.filter((o) => o.status === 'new').length;
   const pendingReviews = reviews.filter((r) => !r.is_approved).length;
   const newMessages = messages.filter((m) => m.status === 'new').length;
+  const pendingMerchOrders = merchOrders.filter((o) => o.status === 'pending').length;
+  const newCatering = cateringReqs.filter((c) => c.status === 'new').length;
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const formatTime = (t: string) => {
@@ -173,9 +256,7 @@ export default function AdminDashboard() {
     <button
       onClick={() => setTab(t)}
       className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-body text-sm transition-all duration-200 ${
-        tab === t
-          ? 'bg-[#c8a96a] text-[#2b1d16]'
-          : 'bg-[#3a2a20] text-[#f7f3ee]/70 hover:text-[#c8a96a]'
+        tab === t ? 'bg-[#c8a96a] text-[#2b1d16]' : 'bg-[#3a2a20] text-[#f7f3ee]/70 hover:text-[#c8a96a]'
       }`}
     >
       {label}
@@ -199,9 +280,7 @@ export default function AdminDashboard() {
             <span className="font-serif-display text-xl text-[#c8a96a] hidden sm:block">Owner Dashboard</span>
           </div>
           <div className="flex items-center gap-4">
-            <a href="/" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors hidden sm:block">
-              View site
-            </a>
+            <a href="/" className="font-body text-sm text-[#f7f3ee]/60 hover:text-[#c8a96a] transition-colors hidden sm:block">View site</a>
             <button
               onClick={async () => { await signOut(); navigate('/'); }}
               className="inline-flex items-center gap-2 rounded-full border border-[#c8a96a]/40 px-4 py-2 font-body text-sm text-[#c8a96a] hover:bg-[#c8a96a] hover:text-[#2b1d16] transition-all duration-300"
@@ -217,6 +296,10 @@ export default function AdminDashboard() {
         <div className="flex flex-wrap gap-2 mb-8">
           {tabBtn('reservations', 'Reservations', pendingReservations)}
           {tabBtn('orders', 'Orders', newOrders)}
+          {tabBtn('menu', 'Menu', 0)}
+          {tabBtn('merch', 'Merch', pendingMerchOrders)}
+          {tabBtn('catering', 'Catering', newCatering)}
+          {tabBtn('loyalty', 'Loyalty', 0)}
           {tabBtn('reviews', 'Reviews', pendingReviews)}
           {tabBtn('messages', 'Messages', newMessages)}
         </div>
@@ -238,21 +321,18 @@ export default function AdminDashboard() {
                           r.status === 'pending' ? 'bg-[#b5563a]/20 text-[#b5563a]' :
                           r.status === 'confirmed' ? 'bg-[#8a9a6b]/20 text-[#8a9a6b]' :
                           'bg-[#f7f3ee]/10 text-[#f7f3ee]/40'
-                        }`}>
-                          {r.status}
-                        </span>
+                        }`}>{r.status}</span>
                       </div>
                       <div className="flex flex-wrap gap-x-6 gap-y-1 font-body text-sm text-[#f7f3ee]/60">
                         <span className="flex items-center gap-1.5"><CalendarCheck className="h-3.5 w-3.5" /> {formatDate(r.reservation_date)}</span>
                         <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {formatTime(r.reservation_time)}</span>
                         <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {r.party_size} {r.party_size === 1 ? 'guest' : 'guests'}</span>
+                        <span className="flex items-center gap-1.5">{r.seating_preference === 'outdoor' ? <Sun className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />} {r.seating_preference}</span>
                         <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {r.email}</span>
                         <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {r.phone}</span>
                       </div>
                       {r.special_requests && (
-                        <p className="font-body text-sm text-[#f7f3ee]/50 italic">
-                          "{r.special_requests}"
-                        </p>
+                        <p className="font-body text-sm text-[#f7f3ee]/50 italic">"{r.special_requests}"</p>
                       )}
                     </div>
                     <div className="flex gap-2 shrink-0">
@@ -295,54 +375,42 @@ export default function AdminDashboard() {
                 }`}>
                   <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                     <div className="flex-1 space-y-3">
-                      {/* Header: name + table + status */}
                       <div className="flex items-center gap-2 flex-wrap">
                         <Utensils className="h-4 w-4 text-[#c8a96a]" />
                         <span className="font-serif-display text-lg text-[#f7f3ee]">{o.customer_name}</span>
                         <span className="inline-flex items-center gap-1 rounded-full bg-[#f7f3ee]/5 px-2.5 py-0.5 text-xs text-[#f7f3ee]/60">
-                          <Hash className="h-3 w-3" /> {o.table_number}
+                          {o.order_type === 'pickup' ? <BagTake className="h-3 w-3" /> : <Store className="h-3 w-3" />}
+                          {o.order_type === 'pickup' ? 'Pickup' : <><Hash className="h-3 w-3" /> {o.table_number}</>}
                         </span>
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           o.status === 'new' ? 'bg-[#b5563a]/20 text-[#b5563a]' :
                           o.status === 'preparing' ? 'bg-[#c8a96a]/20 text-[#c8a96a]' :
                           o.status === 'ready' ? 'bg-[#8a9a6b]/20 text-[#8a9a6b]' :
                           'bg-[#f7f3ee]/10 text-[#f7f3ee]/40'
-                        }`}>
-                          {o.status}
-                        </span>
+                        }`}>{o.status}</span>
                         <span className="flex items-center gap-1 font-body text-xs text-[#f7f3ee]/40">
                           <Clock className="h-3 w-3" /> {new Date(o.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                         </span>
                       </div>
-
-                      {/* Items list */}
                       <div className="space-y-1.5">
                         {o.items.map((line, i) => (
                           <div key={i} className="flex items-center justify-between font-body text-sm text-[#f7f3ee]/70">
-                            <span>
-                              <span className="font-medium text-[#c8a96a]">{line.quantity}x</span> {line.name}
-                            </span>
+                            <span><span className="font-medium text-[#c8a96a]">{line.quantity}x</span> {line.name}</span>
                             <span className="text-[#f7f3ee]/50">${(line.price * line.quantity).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
-
-                      {/* Notes */}
                       {o.notes && (
                         <div className="flex items-start gap-2 rounded-lg bg-[#f7f3ee]/5 px-3 py-2">
                           <StickyNote className="h-3.5 w-3.5 text-[#c8a96a] shrink-0 mt-0.5" />
                           <p className="font-body text-sm text-[#f7f3ee]/50 italic">{o.notes}</p>
                         </div>
                       )}
-
-                      {/* Total */}
                       <div className="flex items-center gap-1.5 border-t border-[#c8a96a]/10 pt-2">
                         <DollarSign className="h-3.5 w-3.5 text-[#c8a96a]" />
                         <span className="font-serif-display text-lg text-[#c8a96a]">{Number(o.total).toFixed(2)}</span>
                       </div>
                     </div>
-
-                    {/* Actions */}
                     <div className="flex flex-col gap-2 shrink-0">
                       {o.status === 'new' && (
                         <button onClick={() => updateOrderStatus(o.id, 'preparing')}
@@ -374,6 +442,233 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Menu Management */}
+        {tab === 'menu' && (
+          <div className="space-y-3">
+            <p className="font-body text-sm text-[#f7f3ee]/40 mb-4">Toggle items on or off the digital menu and update prices in real-time.</p>
+            {menuItems.map((m) => (
+              <div key={m.id} className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/10 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-serif-display text-base text-[#f7f3ee]">{m.name}</span>
+                      <span className="rounded-full bg-[#f7f3ee]/5 px-2 py-0.5 text-xs text-[#f7f3ee]/40">{m.category}</span>
+                      {!m.is_available && (
+                        <span className="rounded-full bg-[#b5563a]/20 px-2 py-0.5 text-xs font-medium text-[#b5563a]">Sold out</span>
+                      )}
+                    </div>
+                    <div className="mt-1 flex items-center gap-3">
+                      {editingPrice === m.id ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-body text-sm text-[#f7f3ee]/50">$</span>
+                          <input
+                            type="number"
+                            step="0.50"
+                            value={priceInput}
+                            onChange={(e) => setPriceInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && savePrice(m.id)}
+                            className="w-20 rounded-lg border border-[#c8a96a]/30 bg-[#2b1d16] px-2 py-1 font-body text-sm text-[#f7f3ee] focus:outline-none focus:border-[#c8a96a]"
+                            autoFocus
+                          />
+                          <button onClick={() => savePrice(m.id)} className="inline-flex items-center gap-1 rounded-lg bg-[#8a9a6b]/20 px-2 py-1 font-body text-xs text-[#8a9a6b] hover:bg-[#8a9a6b]/30 transition-colors">
+                            <Save className="h-3 w-3" /> Save
+                          </button>
+                          <button onClick={() => setEditingPrice(null)} className="font-body text-xs text-[#f7f3ee]/40 hover:text-[#f7f3ee]/70 transition-colors">Cancel</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => { setEditingPrice(m.id); setPriceInput(String(m.price)); }} className="inline-flex items-center gap-1 font-body text-sm text-[#c8a96a] hover:text-[#d8b97a] transition-colors">
+                          <DollarSign className="h-3.5 w-3.5" />{Number(m.price).toFixed(2)}
+                          <Pencil className="h-3 w-3 ml-1 opacity-50" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleAvailability(m.id, m.is_available)}
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 font-body text-xs font-medium transition-colors whitespace-nowrap ${
+                      m.is_available
+                        ? 'bg-[#8a9a6b]/20 text-[#8a9a6b] hover:bg-[#b5563a]/20 hover:text-[#b5563a]'
+                        : 'bg-[#8a9a6b]/20 text-[#8a9a6b] hover:bg-[#8a9a6b]/30'
+                    }`}
+                  >
+                    {m.is_available ? <><X className="h-3.5 w-3.5" /> Mark sold out</> : <><Check className="h-3.5 w-3.5" /> Make available</>}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Merch Orders */}
+        {tab === 'merch' && (
+          <div className="space-y-4">
+            {merchOrders.length === 0 ? (
+              <p className="font-body text-sm text-[#f7f3ee]/40 text-center py-20">No merchandise orders yet.</p>
+            ) : (
+              merchOrders.map((o) => (
+                <div key={o.id} className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/10 p-5">
+                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <ShoppingBag className="h-4 w-4 text-[#c8a96a]" />
+                        <span className="font-serif-display text-lg text-[#f7f3ee]">{o.customer_name}</span>
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          o.status === 'pending' ? 'bg-[#b5563a]/20 text-[#b5563a]' :
+                          o.status === 'fulfilled' ? 'bg-[#8a9a6b]/20 text-[#8a9a6b]' :
+                          'bg-[#f7f3ee]/10 text-[#f7f3ee]/40'
+                        }`}>{o.status}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 font-body text-sm text-[#f7f3ee]/60">
+                        <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {o.email}</span>
+                        <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {formatDate(o.created_at)}</span>
+                      </div>
+                      <div className="space-y-1">
+                        {o.items.map((line, i) => (
+                          <div key={i} className="flex items-center justify-between font-body text-sm text-[#f7f3ee]/70">
+                            <span><span className="font-medium text-[#c8a96a]">{line.quantity}x</span> {line.name}</span>
+                            <span className="text-[#f7f3ee]/50">${(line.price * line.quantity).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1.5 border-t border-[#c8a96a]/10 pt-2">
+                        <DollarSign className="h-3.5 w-3.5 text-[#c8a96a]" />
+                        <span className="font-serif-display text-lg text-[#c8a96a]">{Number(o.total).toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {o.status === 'pending' && (
+                        <button onClick={() => updateMerchOrderStatus(o.id, 'fulfilled')}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#8a9a6b]/20 px-3 py-2 font-body text-xs text-[#8a9a6b] hover:bg-[#8a9a6b]/30 transition-colors whitespace-nowrap">
+                          <Check className="h-3.5 w-3.5" /> Fulfill
+                        </button>
+                      )}
+                      <button onClick={() => updateMerchOrderStatus(o.id, 'cancelled')}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#b5563a]/20 px-3 py-2 font-body text-xs text-[#b5563a] hover:bg-[#b5563a]/30 transition-colors whitespace-nowrap">
+                        <X className="h-3.5 w-3.5" /> Cancel
+                      </button>
+                      <button onClick={() => deleteMerchOrder(o.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Catering Requests */}
+        {tab === 'catering' && (
+          <div className="space-y-4">
+            {cateringReqs.length === 0 ? (
+              <p className="font-body text-sm text-[#f7f3ee]/40 text-center py-20">No catering requests yet.</p>
+            ) : (
+              cateringReqs.map((c) => (
+                <div key={c.id} className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/10 p-5">
+                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4 text-[#c8a96a]" />
+                        <span className="font-serif-display text-lg text-[#f7f3ee]">{c.name}</span>
+                        <span className="rounded-full bg-[#f7f3ee]/5 px-2.5 py-0.5 text-xs text-[#f7f3ee]/60">{c.event_type}</span>
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          c.status === 'new' ? 'bg-[#b5563a]/20 text-[#b5563a]' :
+                          c.status === 'responded' ? 'bg-[#8a9a6b]/20 text-[#8a9a6b]' :
+                          'bg-[#f7f3ee]/10 text-[#f7f3ee]/40'
+                        }`}>{c.status}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 font-body text-sm text-[#f7f3ee]/60">
+                        <span className="flex items-center gap-1.5"><CalendarCheck className="h-3.5 w-3.5" /> {formatDate(c.event_date)}</span>
+                        <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {c.guest_count} guests</span>
+                        <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {c.email}</span>
+                        <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {c.phone}</span>
+                      </div>
+                      {c.message && (
+                        <p className="font-body text-sm text-[#f7f3ee]/50 italic">"{c.message}"</p>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {c.status !== 'responded' && (
+                        <button onClick={() => updateCateringStatus(c.id, 'responded')}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#8a9a6b]/20 px-3 py-2 font-body text-xs text-[#8a9a6b] hover:bg-[#8a9a6b]/30 transition-colors whitespace-nowrap">
+                          <Check className="h-3.5 w-3.5" /> Mark responded
+                        </button>
+                      )}
+                      <button onClick={() => updateCateringStatus(c.id, 'archived')}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors whitespace-nowrap">
+                        Archive
+                      </button>
+                      <button onClick={() => deleteCatering(c.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Loyalty Members */}
+        {tab === 'loyalty' && (
+          <div className="space-y-4">
+            {loyaltyMembers.length === 0 ? (
+              <p className="font-body text-sm text-[#f7f3ee]/40 text-center py-20">No loyalty members yet.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <div className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/15 p-5 text-center">
+                    <p className="font-serif-display text-3xl text-[#c8a96a]">{loyaltyMembers.length}</p>
+                    <p className="font-body text-xs text-[#f7f3ee]/50 mt-1">Total members</p>
+                  </div>
+                  <div className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/15 p-5 text-center">
+                    <p className="font-serif-display text-3xl text-[#c8a96a]">{loyaltyMembers.reduce((s, m) => s + m.points, 0)}</p>
+                    <p className="font-body text-xs text-[#f7f3ee]/50 mt-1">Total points issued</p>
+                  </div>
+                  <div className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/15 p-5 text-center">
+                    <p className="font-serif-display text-3xl text-[#c8a96a]">{loyaltyMembers.reduce((s, m) => s + m.stamps, 0)}</p>
+                    <p className="font-body text-xs text-[#f7f3ee]/50 mt-1">Coffee stamps earned</p>
+                  </div>
+                </div>
+                {loyaltyMembers.map((m) => (
+                  <div key={m.id} className="rounded-2xl bg-[#3a2a20] border border-[#c8a96a]/10 p-5">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Award className="h-4 w-4 text-[#c8a96a]" />
+                          <span className="font-serif-display text-lg text-[#f7f3ee]">{m.name}</span>
+                          <span className="font-body text-sm text-[#f7f3ee]/50">{m.email}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-6 gap-y-1 font-body text-sm text-[#f7f3ee]/60">
+                          <span className="flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" /> {m.points} points</span>
+                          <span className="flex items-center gap-1.5"><Coffee className="h-3.5 w-3.5" /> {m.stamps} / 9 stamps</span>
+                          <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Joined {formatDate(m.created_at)}</span>
+                        </div>
+                        {/* Stamp card progress */}
+                        <div className="flex gap-1 mt-2">
+                          {Array.from({ length: 9 }).map((_, i) => (
+                            <div key={i} className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
+                              i < m.stamps ? 'bg-[#c8a96a] text-[#2b1d16]' : 'bg-[#f7f3ee]/5 text-[#f7f3ee]/20'
+                            }`}>
+                              {i < m.stamps ? <Coffee className="h-3 w-3" /> : i + 1}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={() => deleteLoyaltyMember(m.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors shrink-0">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
         {/* Reviews */}
         {tab === 'reviews' && (
           <div className="space-y-4">
@@ -396,9 +691,7 @@ export default function AdminDashboard() {
                         </div>
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           r.is_approved ? 'bg-[#8a9a6b]/20 text-[#8a9a6b]' : 'bg-[#b5563a]/20 text-[#b5563a]'
-                        }`}>
-                          {r.is_approved ? 'approved' : 'pending'}
-                        </span>
+                        }`}>{r.is_approved ? 'approved' : 'pending'}</span>
                       </div>
                       <p className="font-body text-sm text-[#f7f3ee]/60 italic">"{r.review_text}"</p>
                     </div>
@@ -438,9 +731,7 @@ export default function AdminDashboard() {
                           m.status === 'new' ? 'bg-[#b5563a]/20 text-[#b5563a]' :
                           m.status === 'read' ? 'bg-[#c8a96a]/20 text-[#c8a96a]' :
                           'bg-[#f7f3ee]/10 text-[#f7f3ee]/40'
-                        }`}>
-                          {m.status}
-                        </span>
+                        }`}>{m.status}</span>
                       </div>
                       <div className="flex flex-wrap gap-x-6 gap-y-1 font-body text-sm text-[#f7f3ee]/60">
                         <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {m.name}</span>
@@ -456,9 +747,9 @@ export default function AdminDashboard() {
                         </button>
                       )}
                       <button onClick={() => updateMessageStatus(m.id, 'archived')}
-                          className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
-                          Archive
-                        </button>
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
+                        Archive
+                      </button>
                       <button onClick={() => deleteMessage(m.id)}
                         className="inline-flex items-center gap-1 rounded-lg bg-[#f7f3ee]/5 px-3 py-2 font-body text-xs text-[#f7f3ee]/40 hover:bg-[#f7f3ee]/10 transition-colors">
                         <Trash2 className="h-3.5 w-3.5" />

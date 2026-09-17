@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Leaf, Flame, Award, Wheat, Filter } from 'lucide-react';
 import { supabase, type MenuItem } from '@/lib/supabase';
 import PlateCard from '@/components/PlateCard';
 import FeaturedSection from '@/components/FeaturedSection';
@@ -9,11 +9,21 @@ import { useReveal } from '@/hooks/useReveal';
 
 const categoryOrder = ['Brunch', 'Starters', 'Mains', 'Desserts', 'Drinks'];
 
+const dietaryTags = [
+  { key: 'Vegetarian', icon: Leaf, label: 'Veg' },
+  { key: 'Vegan', icon: Leaf, label: 'Vegan' },
+  { key: 'Gluten-Free', icon: Wheat, label: 'GF' },
+  { key: "Chef's Pick", icon: Award, label: "Chef's Pick" },
+  { key: 'Spicy', icon: Flame, label: 'Spicy' },
+];
+
 export default function MenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<string>('All');
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [showUnavailable, setShowUnavailable] = useState(true);
   const { ref, visible } = useReveal<HTMLDivElement>();
 
   useEffect(() => {
@@ -34,20 +44,32 @@ export default function MenuPage() {
     fetchMenu();
   }, []);
 
-  const featured = items.filter((i) => i.is_featured);
+  const featured = items.filter((i) => i.is_featured && i.is_available);
 
   const categories = useMemo(() => {
     const set = new Set(items.map((i) => i.category));
     return ['All', ...categoryOrder.filter((c) => set.has(c))];
   }, [items]);
 
-  const filtered = useMemo(
-    () =>
-      (active === 'All' ? items : items.filter((i) => i.category === active)).sort(
-        (a, b) => a.sort_order - b.sort_order
-      ),
-    [items, active]
-  );
+  const filtered = useMemo(() => {
+    let result = active === 'All' ? items : items.filter((i) => i.category === active);
+
+    if (activeTags.length > 0) {
+      result = result.filter((i) => activeTags.every((tag) => i.tags.includes(tag)));
+    }
+
+    if (!showUnavailable) {
+      result = result.filter((i) => i.is_available);
+    }
+
+    return result.sort((a, b) => a.sort_order - b.sort_order);
+  }, [items, active, activeTags, showUnavailable]);
+
+  const toggleTag = (tag: string) => {
+    setActiveTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
 
   return (
     <PageLayout>
@@ -72,10 +94,11 @@ export default function MenuPage() {
               Everything from our kitchen
             </h2>
             <p className="mt-4 font-body text-[#6b4f3a] leading-relaxed">
-              Filter by category to find your next favorite.
+              Filter by category or dietary preference to find your next favorite.
             </p>
           </div>
 
+          {/* Category tabs */}
           <div className="mt-10 flex justify-center">
             <div className="no-scrollbar flex gap-2 overflow-x-auto rounded-full bg-[#2b1d16] p-1.5">
               {categories.map((cat) => (
@@ -94,6 +117,36 @@ export default function MenuPage() {
             </div>
           </div>
 
+          {/* Dietary filters */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1 font-body text-xs tracking-wide uppercase text-[#6b4f3a]/60">
+              <Filter className="h-3.5 w-3.5" /> Filter:
+            </span>
+            {dietaryTags.map(({ key, icon: Icon, label }) => (
+              <button
+                key={key}
+                onClick={() => toggleTag(key)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-body text-xs tracking-wide transition-all duration-200 ${
+                  activeTags.includes(key)
+                    ? 'bg-[#c8a96a] text-[#2b1d16] shadow-sm'
+                    : 'bg-[#f7f3ee] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
+                }`}
+              >
+                <Icon className="h-3 w-3" /> {label}
+              </button>
+            ))}
+            <button
+              onClick={() => setShowUnavailable((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-body text-xs tracking-wide transition-all duration-200 ${
+                showUnavailable
+                  ? 'bg-[#f7f3ee] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
+                  : 'bg-[#8a9a6b] text-[#f7f3ee]'
+              }`}
+            >
+              {showUnavailable ? 'Hide sold out' : 'Show all'}
+            </button>
+          </div>
+
           <div className="mt-12">
             {loading ? (
               <div className="flex justify-center py-20">
@@ -105,7 +158,7 @@ export default function MenuPage() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
-                <p className="font-body text-[#6b4f3a]">No dishes in this category yet.</p>
+                <p className="font-body text-[#6b4f3a]">No dishes match your filters. Try clearing some.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

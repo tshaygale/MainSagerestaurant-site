@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, X, Loader2, CheckCircle2, Send, User, Hash, StickyNote } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, X, Loader2, CheckCircle2, Send, User, Hash, StickyNote, Store, BagTake } from 'lucide-react';
 import { useOrder } from '@/hooks/useOrder';
 import { supabase } from '@/lib/supabase';
 
@@ -11,6 +11,7 @@ export default function OrderTray() {
   const [customerName, setCustomerName] = useState('');
   const [tableNumber, setTableNumber] = useState('');
   const [notes, setNotes] = useState('');
+  const [orderType, setOrderType] = useState<'dine-in' | 'pickup'>('dine-in');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,10 +20,11 @@ export default function OrderTray() {
 
     const { error } = await supabase.from('orders').insert({
       customer_name: customerName.trim(),
-      table_number: tableNumber.trim(),
+      table_number: orderType === 'pickup' ? 'Pickup' : tableNumber.trim(),
       items: lines.map((l) => ({ name: l.name, price: l.price, quantity: l.quantity })),
       total: totalPrice,
       notes: notes.trim() || null,
+      order_type: orderType,
     });
 
     if (error) {
@@ -105,6 +107,33 @@ export default function OrderTray() {
                 </div>
               ) : (
                 <>
+                  {/* Order type toggle */}
+                  <div className="mb-4">
+                    <label className="font-body text-xs tracking-wide uppercase text-[#6b4f3a] mb-2 block">Order type</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setOrderType('dine-in')}
+                        className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-body text-sm font-medium transition-all ${
+                          orderType === 'dine-in'
+                            ? 'bg-[#2b1d16] text-[#c8a96a]'
+                            : 'bg-[#efe7db] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
+                        }`}
+                      >
+                        <Store className="h-4 w-4" /> Dine-in
+                      </button>
+                      <button
+                        onClick={() => setOrderType('pickup')}
+                        className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-body text-sm font-medium transition-all ${
+                          orderType === 'pickup'
+                            ? 'bg-[#2b1d16] text-[#c8a96a]'
+                            : 'bg-[#efe7db] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
+                        }`}
+                      >
+                        <BagTake className="h-4 w-4" /> Pickup
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Items */}
                   <div className="space-y-3">
                     {lines.map((line) => (
@@ -170,19 +199,21 @@ export default function OrderTray() {
                         className="w-full rounded-xl border border-[#6b4f3a]/20 bg-[#f7f3ee] px-4 py-3 font-body text-sm text-[#2b1d16] placeholder-[#6b4f3a]/40 focus:border-[#c8a96a] focus:outline-none focus:ring-1 focus:ring-[#c8a96a] transition-all"
                       />
                     </div>
-                    <div>
-                      <label className="flex items-center gap-2 font-body text-xs tracking-wide uppercase text-[#6b4f3a] mb-2">
-                        <Hash className="h-3.5 w-3.5" /> Table number
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={tableNumber}
-                        onChange={(e) => setTableNumber(e.target.value)}
-                        placeholder="Table 7"
-                        className="w-full rounded-xl border border-[#6b4f3a]/20 bg-[#f7f3ee] px-4 py-3 font-body text-sm text-[#2b1d16] placeholder-[#6b4f3a]/40 focus:border-[#c8a96a] focus:outline-none focus:ring-1 focus:ring-[#c8a96a] transition-all"
-                      />
-                    </div>
+                    {orderType === 'dine-in' && (
+                      <div>
+                        <label className="flex items-center gap-2 font-body text-xs tracking-wide uppercase text-[#6b4f3a] mb-2">
+                          <Hash className="h-3.5 w-3.5" /> Table number
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={tableNumber}
+                          onChange={(e) => setTableNumber(e.target.value)}
+                          placeholder="Table 7"
+                          className="w-full rounded-xl border border-[#6b4f3a]/20 bg-[#f7f3ee] px-4 py-3 font-body text-sm text-[#2b1d16] placeholder-[#6b4f3a]/40 focus:border-[#c8a96a] focus:outline-none focus:ring-1 focus:ring-[#c8a96a] transition-all"
+                        />
+                      </div>
+                    )}
                     <div>
                       <label className="flex items-center gap-2 font-body text-xs tracking-wide uppercase text-[#6b4f3a] mb-2">
                         <StickyNote className="h-3.5 w-3.5" /> Notes (optional)
@@ -213,7 +244,7 @@ export default function OrderTray() {
                         </>
                       ) : (
                         <>
-                          <Send className="h-4 w-4" /> Send order to kitchen
+                          <Send className="h-4 w-4" /> {orderType === 'pickup' ? 'Place pickup order' : 'Send order to kitchen'}
                         </>
                       )}
                     </button>

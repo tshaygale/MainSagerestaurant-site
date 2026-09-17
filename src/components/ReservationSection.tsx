@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Loader2,
   CalendarCheck,
+  Sun,
+  Home,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useReveal } from '@/hooks/useReveal';
@@ -31,6 +33,7 @@ type FormState = {
   party_size: number;
   reservation_date: string;
   reservation_time: string;
+  seating_preference: 'indoor' | 'outdoor';
   special_requests: string;
 };
 
@@ -41,6 +44,7 @@ const initialForm: FormState = {
   party_size: 2,
   reservation_date: '',
   reservation_time: '',
+  seating_preference: 'indoor',
   special_requests: '',
 };
 
@@ -68,6 +72,7 @@ export default function ReservationSection() {
       party_size: form.party_size,
       reservation_date: form.reservation_date,
       reservation_time: form.reservation_time,
+      seating_preference: form.seating_preference,
       special_requests: form.special_requests.trim() || null,
     });
 
@@ -245,6 +250,37 @@ export default function ReservationSection() {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Seating preference */}
+            <div>
+              <label className={labelClass}>
+                <Sun className="h-3.5 w-3.5" /> Seating preference
+              </label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => update('seating_preference', 'indoor')}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-body text-sm font-medium transition-all duration-200 ${
+                    form.seating_preference === 'indoor'
+                      ? 'bg-[#c8a96a] text-[#2b1d16] shadow-md'
+                      : 'bg-[#efe7db] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
+                  }`}
+                >
+                  <Home className="h-4 w-4" /> Indoor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update('seating_preference', 'outdoor')}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-body text-sm font-medium transition-all duration-200 ${
+                    form.seating_preference === 'outdoor'
+                      ? 'bg-[#c8a96a] text-[#2b1d16] shadow-md'
+                      : 'bg-[#efe7db] text-[#6b4f3a] border border-[#6b4f3a]/15 hover:border-[#c8a96a]/50'
+                  }`}
+                >
+                  <Sun className="h-4 w-4" /> Outdoor
+                </button>
               </div>
             </div>
 
